@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mirror World // Spatial Reality Game Prototyping</title>
+    
+    <!-- Google Fonts: Space Grotesk & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- MapLibre GL CSS -->
+    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+    
+    <!-- Eruda Mobile DevTools for Remote iPad Debugging -->
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
+  </head>
+  <body>
+    <div id="map"></div>
+    
+    <!-- Glassmorphic HUD Header -->
+    <header class="hud-header">
+      <div class="logo-area">
+        <span class="icon-pulse">✦</span>
+        <h1>MIRROR WORLD</h1>
+        <span class="badge">PROTOTYPE V1.0</span>
+      </div>
+      <div class="status-indicator">
+        <span class="pulse-dot"></span>
+        <span class="status-text">PIPELINE ONLINE</span>
+      </div>
+    </header>
+
+    <!-- Sidebar Info Panel (Left) -->
+    <aside class="hud-panel left-panel mobile-active">
+      <div class="panel-section">
+        <h2>Spatial Engine</h2>
+        <p class="section-desc">Procedural Albion-style extrusion mapping OpenStreetMap to high-performance Three.js layers.</p>
+      </div>
+      
+      <div class="panel-section">
+        <h3>Pipeline Parameters</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-label">Map Engine</span>
+            <span class="stat-value">MapLibre 4.7</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">3D Context</span>
+            <span class="stat-value">Three.js R167</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Target Center</span>
+            <span class="stat-value">Bellevue, WA</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">Tile Source</span>
+            <span class="stat-value">PMTiles (OSM)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-section telemetry">
+        <h3>Active Telemetry</h3>
+        <div class="telemetry-row">
+          <span>Camera Zoom</span>
+          <span id="tel-zoom">15.50</span>
+        </div>
+        <div class="telemetry-row">
+          <span>Bearing</span>
+          <span id="tel-bearing">28.0°</span>
+        </div>
+        <div class="telemetry-row">
+          <span>Pitch</span>
+          <span id="tel-pitch">60.0°</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Sidebar Controls Panel (Right) -->
+    <aside class="hud-panel right-panel">
+      <div class="panel-section">
+        <h2>Visual Controls</h2>
+      </div>
+
+      <div class="panel-section">
+        <h3>Theme Presets</h3>
+        <div class="control-group">
+          <button class="preset-btn active" data-preset="fantasy">Fantasy Dawn</button>
+          <button class="preset-btn" data-preset="neon">Neon Grid</button>
+          <button class="preset-btn" data-preset="monochrome">Dark Mono</button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>Procedural Extrusion</h3>
+        <div class="control-row">
+          <label for="height-multiplier">Height Scale</label>
+          <input type="range" id="height-multiplier" min="0.5" max="3.0" step="0.1" value="1.0">
+        </div>
+        <div class="control-row">
+          <label for="building-density">Procedural Density</label>
+          <input type="range" id="building-density" min="0.1" max="1.0" step="0.1" value="0.7">
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3>Render Modes</h3>
+        <div class="toggle-row">
+          <span class="toggle-label">Toon Shading</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-toon" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-label">Show Wireframe</span>
+          <label class="switch">
+            <input type="checkbox" id="toggle-wireframe">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="panel-section footer-note">
+        <p>Interactive Demo. Left-click & drag to pan. Right-click & drag to rotate/pitch camera.</p>
+      </div>
+    </aside>
+    
+    <!-- Mobile HUD Navigation Tab Bar -->
+    <nav class="mobile-tabs-nav glass">
+      <button class="mobile-tab-btn active" data-tab="spatial">
+        <span class="tab-icon">⬡</span>
+        <span class="tab-label">Spatial</span>
+      </button>
+      <button class="mobile-tab-btn" data-tab="controls">
+        <span class="tab-icon">◵</span>
+        <span class="tab-label">Controls</span>
+      </button>
+      <button class="mobile-tab-btn" data-tab="logs">
+        <span class="tab-icon">▤</span>
+        <span class="tab-label">Logs</span>
+      </button>
+    </nav>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

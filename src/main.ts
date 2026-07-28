@@ -3,7 +3,6 @@ import { ConfigManager } from './state/config';
 import { initializeMap } from './engine/map';
 import { ThreeLayer } from './engine/three-layer';
 import { setupUIControls } from './ui/controls';
-import { setupTelemetry } from './ui/telemetry';
 import { logToScreen } from './ui/debug-console';
 
 const BellevueCenter: [number, number] = [-122.19, 47.61];
@@ -38,13 +37,10 @@ map.on('load', () => {
   logToScreen('Map fully loaded.');
 });
 
-// 4. Connect Telemetry Panel
-setupTelemetry(map);
-
-// 5. Connect UI Event Listeners & Tab Switcher
+// 4. Connect UI Event Listeners & Tab Switcher
 setupUIControls(configManager, () => map.triggerRepaint());
 
-// 6. Global helper for debugging projection matrices
+// 5. Global helper for debugging projection matrices
 (window as any).dumpMatrices = () => {
   const options = (window as any).lastOptions;
   if (options) {

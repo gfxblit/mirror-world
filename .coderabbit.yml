@@ -1,0 +1,36 @@
+# CodeRabbit Configuration
+
+language: "en-US"
+
+reviews:
+  profile: "chill"
+  auto_review: true
+  ignore_draft_pr: true
+  disable_poem: true
+
+# Custom instructions for CodeRabbit reviews
+file_path_instructions:
+  - path: "src/**/*.ts"
+    instructions: |
+      You are reviewing TypeScript code for a MapLibre GL JS + Three.js shared-context WebGL project.
+      Ensure the following constraints are strictly followed:
+      1. WebGL Context Sharing: The Three.js WebGLRenderer must be initialized sharing the MapLibre GL context (using `context: gl` and the map canvas).
+      2. Rendering Loop State: Ensure `renderer.resetState()` is called on every frame rendering step inside `render()` to prevent MapLibre layout or shader context corruption.
+      3. Coordinate translations: Verify coordinate translations are handled via Mercator Coordinate scaling relative to the Bellevue center origin to prevent floating-point precision loss.
+      4. Repaint Trigger: Confirm any UI/HUD parameter update (presets, scale, density, toon toggles) invokes `map.triggerRepaint()` to force map refreshes.
+      5. Error handling: Unhandled Promise rejections and window errors should be logged using `logToScreen` where appropriate.
+
+  - path: "src/**/*.css"
+    instructions: |
+      You are reviewing stylesheet modifications for a glassmorphic dashboard interface.
+      Ensure the following:
+      1. Glassmorphism guidelines: CSS should use translucent borders (e.g. `rgba(...)` or `hsla(...)`), backdrop blurs (`backdrop-filter: blur(...)`), and customized HSL variable colors.
+      2. Layout boundaries: Avoid overlapping panels. Maintain separate selectors for mobile active panels (`.mobile-active`) vs desktop layout panels.
+      3. Accessibility and responsiveness: Check transitions and flex/grid alignment for mobile browser preview layouts.
+
+  - path: "index.html"
+    instructions: |
+      You are reviewing the HTML structure of the application.
+      Verify that:
+      1. All new interactive control elements (sliders, buttons, toggles) have unique, semantic, and descriptive IDs.
+      2. Telemetry placeholders exist for map properties (zoom, bearing, pitch).

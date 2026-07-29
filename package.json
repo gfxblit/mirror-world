@@ -6,13 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
     "@types/three": "^0.185.1",
+    "@vitest/coverage-v8": "^4.1.10",
     "playwright": "^1.62.0",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "maplibre-gl": "^6.0.0",

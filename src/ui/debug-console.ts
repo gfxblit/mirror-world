@@ -10,10 +10,10 @@ export class DebugConsole {
       this.consoleEl = document.createElement('div');
       this.consoleEl.id = 'debug-console';
       this.consoleEl.style.position = 'absolute';
-      this.consoleEl.style.bottom = '10px';
-      this.consoleEl.style.left = '50%';
-      this.consoleEl.style.transform = 'translateX(-50%)';
-      this.consoleEl.style.width = 'calc(100% - 680px)';
+      this.consoleEl.style.bottom = '20px';
+      this.consoleEl.style.left = '360px'; // 20px margin + 320px left panel + 20px gap
+      this.consoleEl.style.right = '20px';
+      this.consoleEl.style.width = 'auto';
       this.consoleEl.style.maxHeight = '120px';
       this.consoleEl.style.overflowY = 'auto';
       this.consoleEl.style.background = 'rgba(10, 10, 15, 0.9)';

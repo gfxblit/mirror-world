@@ -5,7 +5,6 @@ import type { ConfigManager } from '../state/config';
 import { latLonToLocal } from '../utils/geo';
 import type { OSMBuilding } from '../services/osm';
 import { fetchOSMBuildings } from '../services/osm';
-import { generateProceduralBuildings } from '../generators/procedural';
 import { logToScreen } from '../ui/debug-console';
 
 export class ThreeLayer implements CustomLayerInterface {
@@ -42,32 +41,11 @@ export class ThreeLayer implements CustomLayerInterface {
   }
 
   private setupConfigSubscription() {
-    let prevPreset = this.configManager.get('preset');
-    let prevHeightScale = this.configManager.get('heightScale');
-    let prevDensity = this.configManager.get('density');
     let prevToonEnabled = this.configManager.get('toonEnabled');
     let prevWireframeEnabled = this.configManager.get('wireframeEnabled');
 
     this.configManager.subscribe((config) => {
-      let rebuildNeeded = false;
       let materialUpdateNeeded = false;
-
-      if (config.preset !== prevPreset) {
-        prevPreset = config.preset;
-        materialUpdateNeeded = true;
-        this.updateLights();
-        logToScreen(`Visual preset updated to: ${config.preset}`);
-      }
-
-      if (config.heightScale !== prevHeightScale) {
-        prevHeightScale = config.heightScale;
-        rebuildNeeded = true;
-      }
-
-      if (config.density !== prevDensity) {
-        prevDensity = config.density;
-        rebuildNeeded = true;
-      }
 
       if (config.toonEnabled !== prevToonEnabled) {
         prevToonEnabled = config.toonEnabled;
@@ -94,14 +72,6 @@ export class ThreeLayer implements CustomLayerInterface {
         }
       }
 
-      if (rebuildNeeded) {
-        if (this.osmBuildings && this.osmBuildings.length > 0) {
-          this.generateOSMBuildings(this.osmBuildings);
-        } else {
-          this.generateBuildings();
-        }
-      }
-
       if (this.map) {
         this.map.triggerRepaint();
       }
@@ -109,20 +79,11 @@ export class ThreeLayer implements CustomLayerInterface {
   }
 
   updateMaterials() {
-    const preset = this.configManager.get('preset');
     const wireframeEnabled = this.configManager.get('wireframeEnabled');
     const toonEnabled = this.configManager.get('toonEnabled');
 
-    let baseColor = 0x8a2be2; // vibrant fantasy purple
-    let roofColor = 0xff6b8b; // coral pink
-
-    if (preset === 'neon') {
-      baseColor = 0x00ffcc; // neon cyan
-      roofColor = 0xff0055; // neon pink
-    } else if (preset === 'monochrome') {
-      baseColor = 0x3a3d4d; // slate grey
-      roofColor = 0x5a5e73; // lighter slate grey
-    }
+    const baseColor = 0xc5bcae; // warm medieval stone beige
+    const roofColor = 0x2c5a70; // medieval slate teal-blue
 
     if (toonEnabled) {
       this.baseMat = new THREE.MeshToonMaterial({
@@ -153,21 +114,6 @@ export class ThreeLayer implements CustomLayerInterface {
     }
   }
 
-  updateLights() {
-    if (!this.dirLight || !this.ambientLight) return;
-    const preset = this.configManager.get('preset');
-    if (preset === 'neon') {
-      this.dirLight.color.setHex(0xff00ff);
-      this.ambientLight.color.setHex(0x0000ff);
-    } else if (preset === 'monochrome') {
-      this.dirLight.color.setHex(0x888888);
-      this.ambientLight.color.setHex(0x222222);
-    } else {
-      this.dirLight.color.setHex(0xffeedd);
-      this.ambientLight.color.setHex(0xffffff);
-    }
-  }
-
   onAdd(mapInstance: Map, gl: WebGL2RenderingContext) {
     logToScreen('onAdd invoked. Setting up WebGLRenderer...');
     this.map = mapInstance;
@@ -194,14 +140,15 @@ export class ThreeLayer implements CustomLayerInterface {
     this.dirLight.position.set(200, 400, 500);
     this.scene.add(this.dirLight);
 
-    // Make sure lighting is correct for the preset
-    this.updateLights();
-
     this.group = new THREE.Group();
     this.scene.add(this.group);
 
-    // Initial loading placeholder logic while fetching Overpass data
-    this.generateBuildings(); // Spawn procedural placeholder immediately
+    const statusEl = document.getElementById('status-indicator');
+    const statusTextEl = document.getElementById('status-text');
+    if (statusEl && statusTextEl) {
+      statusEl.className = 'status-indicator loading';
+      statusTextEl.innerText = 'LOADING OSM...';
+    }
 
     logToScreen('onAdd completed. WebGLRenderer ready. Fetching OSM buildings...');
 
@@ -211,56 +158,32 @@ export class ThreeLayer implements CustomLayerInterface {
         if (buildings && buildings.length > 0) {
           this.osmBuildings = buildings;
           this.generateOSMBuildings(buildings);
+          if (statusEl && statusTextEl) {
+            statusEl.className = 'status-indicator online';
+            statusTextEl.innerText = 'OSM ONLINE';
+          }
         } else {
-          logToScreen('No OSM building elements found. Keeping procedural layout.');
+          logToScreen('No OSM building elements found.');
+          if (statusEl && statusTextEl) {
+            statusEl.className = 'status-indicator offline';
+            statusTextEl.innerText = 'OSM OFFLINE';
+          }
         }
         mapInstance.triggerRepaint();
       })
       .catch((err) => {
-        logToScreen('Failed to load OSM buildings. Keeping procedural layout.', 'warn');
+        logToScreen('Failed to load OSM buildings.', 'warn');
         console.error(err);
+        if (statusEl && statusTextEl) {
+          statusEl.className = 'status-indicator offline';
+          statusTextEl.innerText = 'OSM OFFLINE';
+        }
       });
 
     // Adjust size on map resize
     mapInstance.on('resize', () => {
       this.renderer?.setSize(canvas.width, canvas.height, false);
     });
-  }
-
-  generateBuildings() {
-    if (!this.group) return;
-
-    // Clear existing geometries
-    while (this.group.children.length > 0) {
-      const obj = this.group.children[0];
-      this.group.remove(obj);
-    }
-
-    const buildings = generateProceduralBuildings({
-      density: this.configManager.get('density'),
-      heightScale: this.configManager.get('heightScale'),
-    });
-
-    buildings.forEach((b) => {
-      // 1. Building base structure (width, height, depth)
-      const baseGeom = new THREE.BoxGeometry(b.width, b.height, b.depth);
-      const baseMesh = new THREE.Mesh(baseGeom, this.baseMat);
-      baseMesh.position.set(b.px, b.height / 2, b.pz);
-      this.group!.add(baseMesh);
-
-      // 2. Building roof
-      if (b.roof) {
-        const roofGeom = new THREE.ConeGeometry(b.roof.radius, b.roof.height, b.roof.radialSegments);
-        if (b.roof.rotateY) {
-          roofGeom.rotateY(Math.PI / 4); // Align flat faces of the pyramid with the base cube
-        }
-        const roofMesh = new THREE.Mesh(roofGeom, this.roofMat);
-        roofMesh.position.set(b.px, b.roof.py, b.pz);
-        this.group!.add(roofMesh);
-      }
-    });
-
-    logToScreen(`Generated ${buildings.length} procedural building meshes.`);
   }
 
   generateOSMBuildings(osmBuildings: OSMBuilding[]) {
@@ -273,8 +196,6 @@ export class ThreeLayer implements CustomLayerInterface {
       group.remove(obj);
     }
 
-    const density = this.configManager.get('density');
-    const heightScale = this.configManager.get('heightScale');
     const centerLat = this.center[1];
     const centerLon = this.center[0];
 
@@ -287,9 +208,6 @@ export class ThreeLayer implements CustomLayerInterface {
         return x - Math.floor(x);
       };
 
-      // Filter by density slider
-      if (random() > density) return;
-
       let height = 15;
       if (way.height !== undefined) {
         height = way.height;
@@ -298,8 +216,6 @@ export class ThreeLayer implements CustomLayerInterface {
       } else {
         height = 12 + random() * 48; // procedural variation
       }
-
-      height = height * heightScale;
 
       const pts = way.coordinates.map((coord) => {
         return latLonToLocal(coord.lat, coord.lon, centerLat, centerLon);
@@ -323,8 +239,8 @@ export class ThreeLayer implements CustomLayerInterface {
       group.add(baseMesh);
       count++;
 
-      // Spire/roof for fantasy preset
-      if (this.configManager.get('preset') === 'fantasy' && height > 22 && count % 4 === 0) {
+      // Spire/roof (always on in default fantasy theme for tall buildings)
+      if (height > 22 && count % 4 === 0) {
         let sumX = 0;
         let sumZ = 0;
         pts.forEach((p) => {

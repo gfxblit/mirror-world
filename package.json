@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.0",
     "@types/three": "^0.185.1",
     "@vitest/coverage-v8": "^4.1.10",
     "playwright": "^1.62.0",

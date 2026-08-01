@@ -122,26 +122,61 @@ body, html {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: hsla(142, 70%, 45%, 0.1);
-  border: 1px solid hsla(142, 70%, 45%, 0.2);
   padding: 6px 12px;
   border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Status Indicator States */
+.status-indicator.loading {
+  background: hsla(38, 90%, 45%, 0.1);
+  border: 1px solid hsla(38, 90%, 45%, 0.25);
+}
+.status-indicator.loading .status-text {
+  color: hsl(38, 90%, 60%);
+}
+.status-indicator.loading .pulse-dot {
+  background-color: hsl(38, 90%, 55%);
+  box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+  animation: pulse-orange 2s infinite;
+}
+
+.status-indicator.online {
+  background: hsla(142, 70%, 45%, 0.1);
+  border: 1px solid hsla(142, 70%, 45%, 0.2);
+}
+.status-indicator.online .status-text {
+  color: hsl(142, 70%, 55%);
+}
+.status-indicator.online .pulse-dot {
+  background-color: hsl(142, 70%, 50%);
+  box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+  animation: pulse-green 2s infinite;
+}
+
+.status-indicator.offline {
+  background: hsla(0, 80%, 45%, 0.1);
+  border: 1px solid hsla(0, 80%, 45%, 0.25);
+}
+.status-indicator.offline .status-text {
+  color: hsl(0, 80%, 65%);
+}
+.status-indicator.offline .pulse-dot {
+  background-color: hsl(0, 80%, 55%);
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: pulse-red 2s infinite;
 }
 
 .status-text {
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.5px;
-  color: hsl(142, 70%, 55%);
 }
 
 .pulse-dot {
   width: 8px;
   height: 8px;
-  background-color: hsl(142, 70%, 50%);
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
-  animation: pulse-green 2s infinite;
 }
 
 /* Sidebar Info & Controls */
@@ -176,9 +211,6 @@ body, html {
   left: 20px;
 }
 
-.right-panel {
-  right: 20px;
-}
 
 .panel-section h2 {
   font-family: var(--font-heading);
@@ -451,6 +483,36 @@ input:checked + .slider:before {
   100% {
     transform: scale(0.95);
     box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+  }
+}
+
+@keyframes pulse-orange {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(245, 158, 11, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+@keyframes pulse-red {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
   }
 }
 

@@ -69,6 +69,7 @@ export class LoadingUI {
       }
       if (this.progressBarEl) {
         this.progressBarEl.style.width = '100%';
+        this.progressBarEl.parentElement?.setAttribute('aria-valuenow', '100');
       }
       this.updateStatusIndicator('online', 'PIPELINE ONLINE');
 
@@ -86,6 +87,7 @@ export class LoadingUI {
       }
       if (this.progressBarEl) {
         this.progressBarEl.style.width = '0%';
+        this.progressBarEl.parentElement?.setAttribute('aria-valuenow', '0');
       }
       this.updateStatusIndicator('offline', 'PIPELINE OFFLINE');
 
@@ -108,6 +110,7 @@ export class LoadingUI {
 
     if (this.progressBarEl) {
       this.progressBarEl.style.width = `${progress}%`;
+      this.progressBarEl.parentElement?.setAttribute('aria-valuenow', Math.round(progress).toString());
     }
 
     this.updateStatusIndicator('loading', 'FETCHING REALITY DATA');

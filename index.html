@@ -34,10 +34,10 @@
         </div>
         <div class="loading-info">
           <div class="loading-title">GENERATING MIRROR WORLD</div>
-          <div id="loading-status" class="loading-status">Connecting to OpenStreetMap Overpass API...</div>
+          <div id="loading-status" class="loading-status" aria-live="polite">Connecting to OpenStreetMap Overpass API...</div>
         </div>
       </div>
-      <div class="loading-progress-bar-container">
+      <div class="loading-progress-bar-container" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
         <div id="loading-progress-bar" class="loading-progress-bar"></div>
       </div>
     </div>

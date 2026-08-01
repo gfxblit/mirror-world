@@ -60,12 +60,7 @@ export class PipelineStateManager {
             ? 'Downloading spatial footprints from OpenStreetMap...'
             : 'Querying Overpass API (Bellevue center)...';
 
-          this.info = {
-            state: nextState,
-            progress: nextProgress,
-            statusText: nextStatus,
-          };
-          this.notify();
+          this.setState(nextState, nextProgress, nextStatus);
         }
       }
     }, 300);

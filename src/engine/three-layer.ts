@@ -7,7 +7,7 @@ import type { OSMBuilding } from '../services/osm';
 import { fetchOSMBuildings } from '../services/osm';
 import { generateProceduralBuildings } from '../generators/procedural';
 import { logToScreen } from '../ui/debug-console';
-import { loadingUI } from '../ui/loading';
+import { pipelineState } from '../state/pipeline';
 
 export class ThreeLayer implements CustomLayerInterface {
   id = 'custom-three-layer';
@@ -205,31 +205,30 @@ export class ThreeLayer implements CustomLayerInterface {
     this.generateBuildings(); // Spawn procedural placeholder immediately
 
     logToScreen('onAdd completed. WebGLRenderer ready. Fetching OSM buildings...');
-    loadingUI.show();
+    pipelineState.startLoading();
 
     // Fetch OSM buildings dynamically
     fetchOSMBuildings(this.center[1], this.center[0])
       .then((buildings) => {
         if (buildings && buildings.length > 0) {
           this.osmBuildings = buildings;
-          loadingUI.updateStatus('Extruding 3D geometry from spatial footprints...');
-          loadingUI.setProgress(85);
+          pipelineState.setState('extruding', 85, 'Extruding 3D geometry from spatial footprints...');
           
           // Yield control to let UI render the 85% stage before locking main thread for extrusion
           setTimeout(() => {
             this.generateOSMBuildings(buildings);
-            loadingUI.hide(true);
+            pipelineState.setState('success', 100, 'Mirror World complete!');
           }, 50);
         } else {
           logToScreen('No OSM building elements found. Keeping procedural layout.');
-          loadingUI.hide(false);
+          pipelineState.setState('failed', 0, 'Failed to load real-world data.');
         }
         mapInstance.triggerRepaint();
       })
       .catch((err) => {
         logToScreen('Failed to load OSM buildings. Keeping procedural layout.', 'warn');
         console.error(err);
-        loadingUI.hide(false);
+        pipelineState.setState('failed', 0, 'Failed to load real-world data.');
       });
 
     // Adjust size on map resize

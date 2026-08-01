@@ -1,3 +1,6 @@
+import { pipelineState } from '../state/pipeline';
+import type { PipelineInfo } from '../state/pipeline';
+
 export class LoadingUI {
   private panelEl: HTMLElement | null = null;
   private statusEl: HTMLElement | null = null;
@@ -6,13 +9,13 @@ export class LoadingUI {
   private statusTextEl: HTMLElement | null = null;
   private statusDotEl: HTMLElement | null = null;
 
-  private progressInterval: number | null = null;
-  private currentProgress = 0;
+  private hideTimeout: any = null;
+  private unsubscribe: (() => void) | null = null;
 
   constructor() {
-    // Only query elements if document is available (prevents issues in non-browser testing contexts)
     if (typeof document !== 'undefined') {
       this.initElements();
+      this.unsubscribe = pipelineState.subscribe((info) => this.render(info));
     }
   }
 
@@ -28,81 +31,86 @@ export class LoadingUI {
     }
   }
 
-  show(): void {
-    if (typeof document === 'undefined') return;
+  destroy(): void {
+    if (this.unsubscribe) {
+      this.unsubscribe();
+      this.unsubscribe = null;
+    }
+    if (this.hideTimeout) {
+      clearTimeout(this.hideTimeout);
+      this.hideTimeout = null;
+    }
+  }
 
+  private render(info: PipelineInfo): void {
     // Re-check elements in case DOM wasn't fully initialized during constructor
     if (!this.panelEl) {
       this.initElements();
     }
-    
-    if (this.panelEl) {
-      this.panelEl.classList.remove('hidden');
-    }
-    
-    this.updateStatusIndicator('loading', 'FETCHING REALITY DATA');
-    this.setProgress(10);
-    this.updateStatus('Querying Overpass API (Bellevue center)...');
 
-    // Start a simulated progress bar incrementing to keep the UI feeling "alive"
-    this.currentProgress = 10;
-    if (this.progressInterval) {
-      clearInterval(this.progressInterval);
+    if (this.hideTimeout) {
+      clearTimeout(this.hideTimeout);
+      this.hideTimeout = null;
     }
-    
-    this.progressInterval = window.setInterval(() => {
-      if (this.currentProgress < 75) {
-        this.currentProgress += Math.random() * 5 + 1; // Increment by 1-6%
-        if (this.currentProgress > 75) this.currentProgress = 75;
-        this.setProgress(this.currentProgress);
-        
-        if (this.currentProgress > 45 && this.statusEl && this.statusEl.innerText.startsWith('Querying')) {
-          this.updateStatus('Downloading spatial footprints from OpenStreetMap...');
-        }
+
+    const { state, progress, statusText } = info;
+
+    if (state === 'idle') {
+      if (this.panelEl) {
+        this.panelEl.classList.add('hidden');
       }
-    }, 300);
-  }
-
-  updateStatus(message: string): void {
-    if (this.statusEl) {
-      this.statusEl.innerText = message;
-    }
-  }
-
-  setProgress(percentage: number): void {
-    this.currentProgress = percentage;
-    if (this.progressBarEl) {
-      this.progressBarEl.style.width = `${percentage}%`;
-    }
-  }
-
-  hide(success = true): void {
-    if (this.progressInterval) {
-      clearInterval(this.progressInterval);
-      this.progressInterval = null;
-    }
-
-    if (success) {
-      this.updateStatus('Mirror World complete!');
-      this.setProgress(100);
       this.updateStatusIndicator('online', 'PIPELINE ONLINE');
-      
-      setTimeout(() => {
+      return;
+    }
+
+    if (state === 'success') {
+      if (this.statusEl) {
+        this.statusEl.innerText = statusText || 'Mirror World complete!';
+      }
+      if (this.progressBarEl) {
+        this.progressBarEl.style.width = '100%';
+      }
+      this.updateStatusIndicator('online', 'PIPELINE ONLINE');
+
+      this.hideTimeout = setTimeout(() => {
         if (this.panelEl) {
           this.panelEl.classList.add('hidden');
         }
       }, 1000);
-    } else {
-      this.updateStatus('Failed to load real-world data.');
-      this.setProgress(0);
+      return;
+    }
+
+    if (state === 'failed') {
+      if (this.statusEl) {
+        this.statusEl.innerText = statusText || 'Failed to load real-world data.';
+      }
+      if (this.progressBarEl) {
+        this.progressBarEl.style.width = '0%';
+      }
       this.updateStatusIndicator('offline', 'PIPELINE OFFLINE');
-      
-      setTimeout(() => {
+
+      this.hideTimeout = setTimeout(() => {
         if (this.panelEl) {
           this.panelEl.classList.add('hidden');
         }
       }, 3000);
+      return;
     }
+
+    // Loading / Downloading / Extruding states
+    if (this.panelEl) {
+      this.panelEl.classList.remove('hidden');
+    }
+
+    if (this.statusEl) {
+      this.statusEl.innerText = statusText;
+    }
+
+    if (this.progressBarEl) {
+      this.progressBarEl.style.width = `${progress}%`;
+    }
+
+    this.updateStatusIndicator('loading', 'FETCHING REALITY DATA');
   }
 
   private updateStatusIndicator(state: 'loading' | 'online' | 'offline', text: string): void {

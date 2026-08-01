@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { LoadingUI } from './loading';
+import { pipelineState } from '../state/pipeline';
 
 describe('LoadingUI', () => {
   let ui: LoadingUI;
@@ -46,6 +47,8 @@ describe('LoadingUI', () => {
   });
 
   afterEach(() => {
+    ui.destroy();
+    pipelineState.setState('idle', 0, '');
     document.body.innerHTML = '';
     vi.restoreAllMocks();
     vi.useRealTimers();
@@ -58,7 +61,9 @@ describe('LoadingUI', () => {
   });
 
   it('should show loading ui, update status indicators, and simulate progress', () => {
-    ui.show();
+    const randomSpy = vi.spyOn(Math, 'random').mockReturnValue(0.8); // 0.8 * 5 + 1 = 5% increment
+
+    pipelineState.startLoading();
 
     // Verify it makes the HUD loading panel visible
     expect(hudLoading.classList.contains('hidden')).toBe(false);
@@ -72,21 +77,21 @@ describe('LoadingUI', () => {
     expect(loadingProgressBar.style.width).toBe('10%');
     expect(loadingStatus.innerText).toBe('Querying Overpass API (Bellevue center)...');
 
-    // Advance time to verify interval increments progress
+    // Advance time to verify interval increments progress: 1 tick of 300ms -> +5% -> 15%
     vi.advanceTimersByTime(300);
-    // Progress should have increased beyond 10%
-    const widthAfter1Tick = parseFloat(loadingProgressBar.style.width);
-    expect(widthAfter1Tick).toBeGreaterThan(10);
-    expect(widthAfter1Tick).toBeLessThanOrEqual(75);
+    expect(loadingProgressBar.style.width).toBe('15%');
 
-    // Advance more to see status change from Querying to Downloading
-    vi.advanceTimersByTime(3000);
+    // Advance 7 more ticks (2100ms) -> +35% -> 50%
+    vi.advanceTimersByTime(2100);
+    expect(loadingProgressBar.style.width).toBe('50%');
     expect(loadingStatus.innerText).toBe('Downloading spatial footprints from OpenStreetMap...');
+
+    expect(randomSpy).toHaveBeenCalled();
   });
 
   it('should handle successful complete state', () => {
-    ui.show();
-    ui.hide(true);
+    pipelineState.startLoading();
+    pipelineState.setState('success', 100, 'Mirror World complete!');
 
     expect(loadingStatus.innerText).toBe('Mirror World complete!');
     expect(loadingProgressBar.style.width).toBe('100%');
@@ -103,8 +108,8 @@ describe('LoadingUI', () => {
   });
 
   it('should handle failure state', () => {
-    ui.show();
-    ui.hide(false);
+    pipelineState.startLoading();
+    pipelineState.setState('failed', 0, 'Failed to load real-world data.');
 
     expect(loadingStatus.innerText).toBe('Failed to load real-world data.');
     expect(loadingProgressBar.style.width).toBe('0%');

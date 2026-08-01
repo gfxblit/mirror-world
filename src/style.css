@@ -470,6 +470,194 @@ input:checked + .slider:before {
   }
 }
 
+/* Loading Status Indicator State */
+.status-indicator.status-loading {
+  background: hsla(217, 91%, 60%, 0.1);
+  border-color: hsla(217, 91%, 60%, 0.2);
+}
+.status-indicator.status-loading .status-text {
+  color: hsl(217, 91%, 65%);
+}
+.status-indicator.status-loading .pulse-dot {
+  background-color: hsl(217, 91%, 60%);
+  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
+  animation: pulse-blue 2s infinite;
+}
+
+/* Offline Status Indicator State */
+.status-indicator.status-offline {
+  background: hsla(354, 70%, 45%, 0.1);
+  border-color: hsla(354, 70%, 45%, 0.2);
+}
+.status-indicator.status-offline .status-text {
+  color: hsl(354, 70%, 55%);
+}
+.status-indicator.status-offline .pulse-dot {
+  background-color: hsl(354, 70%, 50%);
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  animation: pulse-red 2s infinite;
+}
+
+/* Pulse Keyframes */
+@keyframes pulse-blue {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
+
+@keyframes pulse-red {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+/* Loading HUD Panel */
+.hud-loading-panel {
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
+  z-index: 1000;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s;
+  pointer-events: none;
+}
+
+.hud-loading-panel.hidden {
+  opacity: 0;
+  transform: translate(-50%, -20px);
+  visibility: hidden;
+}
+
+.loading-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.loading-spinner-container {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.spinner-svg {
+  width: 100%;
+  height: 100%;
+  animation: spinner-rotate 2s linear infinite;
+}
+
+.spinner-track {
+  stroke: hsla(240, 15%, 20%, 0.5);
+}
+
+.spinner-glow {
+  stroke: hsl(271, 91%, 65%);
+  opacity: 0.15;
+}
+
+.spinner-head {
+  stroke: hsl(271, 91%, 65%);
+  stroke-linecap: round;
+  stroke-dasharray: 125;
+  stroke-dashoffset: 100;
+  animation: spinner-dash 1.5s ease-in-out infinite;
+}
+
+.spinner-center-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: hsl(271, 91%, 70%);
+  font-size: 14px;
+  animation: pulse-glow 2s infinite ease-in-out;
+}
+
+.loading-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.loading-title {
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.loading-status {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.loading-progress-bar-container {
+  width: 100%;
+  height: 6px;
+  background: hsla(240, 10%, 15%, 0.8);
+  border: 1px solid var(--border-hud);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.loading-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent-gradient);
+  box-shadow: 0 0 8px hsl(271, 91%, 65%);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Keyframe animations for spinner */
+@keyframes spinner-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes spinner-dash {
+  0% {
+    stroke-dashoffset: 125;
+  }
+  50% {
+    stroke-dashoffset: 35;
+    transform: rotate(135deg);
+  }
+  100% {
+    stroke-dashoffset: 125;
+    transform: rotate(450deg);
+  }
+}
+
 @media (max-width: 1024px) {
   /* Hide badges on small screens to fit title */
   .logo-area .badge {
@@ -651,6 +839,31 @@ input:checked + .slider:before {
 
   .toggle-label {
     font-size: 11px;
+  }
+
+  /* Loading HUD Panel Mobile adjustments */
+  .hud-loading-panel {
+    top: 72px !important;
+    width: calc(100% - 20px) !important;
+    padding: 10px 14px !important;
+    gap: 8px !important;
+  }
+  
+  .loading-spinner-container {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  .loading-title {
+    font-size: 12px !important;
+  }
+  
+  .loading-status {
+    font-size: 10px !important;
+  }
+  
+  .loading-progress-bar-container {
+    height: 4px !important;
   }
 }
 

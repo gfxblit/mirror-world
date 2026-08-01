@@ -7,6 +7,7 @@ import type { OSMBuilding } from '../services/osm';
 import { fetchOSMBuildings } from '../services/osm';
 import { generateProceduralBuildings } from '../generators/procedural';
 import { logToScreen } from '../ui/debug-console';
+import { loadingUI } from '../ui/loading';
 
 export class ThreeLayer implements CustomLayerInterface {
   id = 'custom-three-layer';
@@ -204,21 +205,31 @@ export class ThreeLayer implements CustomLayerInterface {
     this.generateBuildings(); // Spawn procedural placeholder immediately
 
     logToScreen('onAdd completed. WebGLRenderer ready. Fetching OSM buildings...');
+    loadingUI.show();
 
     // Fetch OSM buildings dynamically
     fetchOSMBuildings(this.center[1], this.center[0])
       .then((buildings) => {
         if (buildings && buildings.length > 0) {
           this.osmBuildings = buildings;
-          this.generateOSMBuildings(buildings);
+          loadingUI.updateStatus('Extruding 3D geometry from spatial footprints...');
+          loadingUI.setProgress(85);
+          
+          // Yield control to let UI render the 85% stage before locking main thread for extrusion
+          setTimeout(() => {
+            this.generateOSMBuildings(buildings);
+            loadingUI.hide(true);
+          }, 50);
         } else {
           logToScreen('No OSM building elements found. Keeping procedural layout.');
+          loadingUI.hide(false);
         }
         mapInstance.triggerRepaint();
       })
       .catch((err) => {
         logToScreen('Failed to load OSM buildings. Keeping procedural layout.', 'warn');
         console.error(err);
+        loadingUI.hide(false);
       });
 
     // Adjust size on map resize

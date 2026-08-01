@@ -20,6 +20,27 @@
   </head>
   <body>
     <div id="map"></div>
+
+    <!-- Glassmorphic Loading HUD Panel -->
+    <div id="hud-loading" class="hud-loading-panel glass hidden">
+      <div class="loading-content">
+        <div class="loading-spinner-container">
+          <svg class="spinner-svg" viewBox="0 0 50 50">
+            <circle class="spinner-track" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+            <circle class="spinner-glow" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+            <circle class="spinner-head" cx="25" cy="25" r="20" fill="none" stroke-width="4"></circle>
+          </svg>
+          <div class="spinner-center-icon">✦</div>
+        </div>
+        <div class="loading-info">
+          <div class="loading-title">GENERATING MIRROR WORLD</div>
+          <div id="loading-status" class="loading-status">Connecting to OpenStreetMap Overpass API...</div>
+        </div>
+      </div>
+      <div class="loading-progress-bar-container">
+        <div id="loading-progress-bar" class="loading-progress-bar"></div>
+      </div>
+    </div>
     
     <!-- Glassmorphic HUD Header -->
     <header class="hud-header">
